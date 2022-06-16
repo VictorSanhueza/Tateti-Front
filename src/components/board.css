@@ -1,0 +1,29 @@
+.board {
+    height: 248px;
+    width: 248px;
+    margin: 30px auto;
+}
+
+.square {
+    float: left;
+    background: #fff;
+    height: 80px;
+    width: 80px;
+    border: solid 1px gray;
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.square:hover {
+    background: rgb(218, 214, 206);
+    cursor: pointer;
+}
+
+.square:focus {
+    outline: none;
+  }
+  
+.kbd-navigation .square:focus {
+background: #ddd;
+}
