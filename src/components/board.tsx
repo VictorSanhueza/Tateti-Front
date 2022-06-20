@@ -11,9 +11,7 @@ export default function Board(props: {game: Game | undefined, backToHome : any})
     const [player2, setPlayer2] = useState<Player>()
     const [token, setToken] = useState(props.game?.token)
     const [game_id, setGameId] = useState(props.game?.id)
-    const [square, setSquare] = useState()
     const [squares, setSquares] = useState(Array(9).fill(null))
-    const [gameCanStart, setGameCanStart] = useState(false)
     const [game, setGame] = useState<Game>(props.game!)
     const [plays, setPlays] = useState(0)
     const [turn, setTurn] = useState<number>(props.game?.turn!)
@@ -37,7 +35,7 @@ export default function Board(props: {game: Game | undefined, backToHome : any})
           [0, 4, 8],
           [2, 4, 6]
         ];
-        //Game is won if all three squares on a line are the same
+
         for (let i = 0; i < lines.length; i++) {
           const [a, b, c] = lines[i];
           if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
@@ -88,6 +86,11 @@ export default function Board(props: {game: Game | undefined, backToHome : any})
     
     const handleClick = (i: any) => {
 
+        if(game.turn.toString() !== window.location.port.charAt(3)){
+            alert("Espere su turno.")
+            return
+        }
+
         const squaress = squares!.slice()
         if (squaress[i]) {
             return
@@ -95,9 +98,9 @@ export default function Board(props: {game: Game | undefined, backToHome : any})
 
         let play = plays + 1
         setPlays(play)
+        checkTie()
         squaress[i] = turn === 1 ? "X" : "O"
         setSquares(squaress)
-        // setTurn(turn! === 2 ? 1 : 2)
         let winner = calculateWinner(squaress)
         setGamePlay(i, winner)
 
@@ -110,6 +113,13 @@ export default function Board(props: {game: Game | undefined, backToHome : any})
             alert("ganador jugador 1")
             clearInterval(check)
             clearInterval(checkTurn)
+            return
+        }
+    }
+
+    const checkTie = () => {
+        if (plays === 8) {
+            alert("Es un empate.")
             return
         }
     }
@@ -127,18 +137,15 @@ export default function Board(props: {game: Game | undefined, backToHome : any})
         axios.get("http://localhost:3000/games/" + game_id + "/checkGame/" + turn)
         .then((response) => {
             if (response.data.turn === turn) {
-                // setTurn(response.data.game.turn)
                 let board_plays = response.data.board_plays.split("")
-                setSquares(board_plays.map((s: any) =>s === "U" ? null : s))
+                setSquares(board_plays.map((s: any) => s === "U" ? null : s))
                 clearInterval(checkTurn)
                 if (response.data.winner) {
-                    alert("El jugador:" + response.data.winner + " ha ganado.")
+                    alert("El jugador: " + response.data.winner + " ha ganado.")
+                }else{
+                    alert("Es su turno.")
                 }
-                alert("Es su turno.")
-            } 
-            // if (response.data.game.turn) {
-                
-            // }                     
+            }              
         })      
     }
 
@@ -167,11 +174,8 @@ export default function Board(props: {game: Game | undefined, backToHome : any})
                     }
                     if (player === 1) {                        
                         setPlayer1(playerModel)
-                        // setTurn(port)
                     }else{
                         setPlayer2(playerModel)
-                        // setTurn(port)
-                        setGameCanStart(true)
                     }
                 }
             })
@@ -186,8 +190,7 @@ export default function Board(props: {game: Game | undefined, backToHome : any})
         )
     }
 
-    function Square(props: any){
-        
+    function Square(props: any){     
         return(
             <button className="square" onClick={props.playerMove} data-testid="board-square">
                 {props.value}
@@ -201,7 +204,7 @@ export default function Board(props: {game: Game | undefined, backToHome : any})
     }
 
     const finishGame = () => {
-        axios.put("http://localhost:3000/games/" + props.game?.id + "/", {token: token, game_state: false}).then(() =>{
+        axios.put("http://localhost:3000/games/" + props.game?.id + "/", {token: token}).then(() =>{
             clearInterval(check)
             clearInterval(checkTurn)
         })
@@ -215,17 +218,11 @@ export default function Board(props: {game: Game | undefined, backToHome : any})
                     <p>Jugador 2: Esperando jugador</p>
                 :   <p>Jugador 2: {player2!.name + " " + player2!.last_name}</p>
                 }
-                {/* {game.turn === 1 ? 
-                    (<p>Turno del jugador: {player1!.name + " "+ player1!.last_name!}</p>)
-                : null}
-                {game.turn === 2 ? 
-                    (<p>Turno del jugador: {player2!.name + " "+ player2!.last_name!}</p>)
-                : null} */}
             </div>
             <div className="board">
-            {boardSquares.map((s) => {
-                return(renderSquare(s))
-            })}           
+                {boardSquares.map((s) => {
+                    return(renderSquare(s))
+                })}           
             </div>
             <FormButton label="Volver al inicio" onClick={goHome}></FormButton>
         </div>
